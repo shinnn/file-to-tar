@@ -196,7 +196,7 @@ test('fileToTar()', async t => {
     error(err) {
       t.strictEqual(
         err.toString(),
-        'TypeError: Expected a plain object, but got /c/ (object).',
+        'TypeError: Expected a plain object to set file-to-tar options, but got /c/ (object).',
         'should fail when the third argument is not a plain object.'
       );
     },

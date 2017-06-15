@@ -4,35 +4,34 @@
 */
 'use strict';
 
-var path = require('path');
-var lstat = require('fs').lstat;
+const path = require('path');
+const lstat = require('fs').lstat;
 
-var dirname = path.dirname;
-var relative = path.relative;
-var resolve = path.resolve;
+const basename = path.basename;
+const dirname = path.dirname;
+const resolve = path.resolve;
 
-var appendType = require('append-type');
-var find = require('lodash').find;
-var fs = require('graceful-fs');
-var isPlainObj = require('is-plain-obj');
-var isStream = require('is-stream');
-var mkdirp = require('mkdirp');
-var objectAssign = require('object-assign');
-var Observable = require('zen-observable');
-var pack = require('tar-fs').pack;
-var cancelablePump = require('cancelable-pump');
-var streamLib = require('readable-stream');
+const appendType = require('append-type');
+const fs = require('graceful-fs');
+const isPlainObj = require('is-plain-obj');
+const isStream = require('is-stream');
+const mkdirp = require('mkdirp');
+const objectAssign = require('object-assign');
+const Observable = require('zen-observable');
+const pack = require('tar-fs').pack;
+const cancelablePump = require('cancelable-pump');
+const streamLib = require('stream');
 
-var PassThrough = streamLib.PassThrough;
-var Transform = streamLib.Transform;
+const PassThrough = streamLib.PassThrough;
+const Transform = streamLib.Transform;
 
-var FILE_PATH_ERROR = 'Expected a file path to be compressed as an archive';
-var TAR_PATH_ERROR = 'Expected a file path where an archive file will be created';
-var TAR_TRANSFORM_ERROR = '`tarTransform` option must be a transform stream ' +
+const FILE_PATH_ERROR = 'Expected a file path to be compressed as an archive';
+const TAR_PATH_ERROR = 'Expected a file path where an archive file will be created';
+const TAR_TRANSFORM_ERROR = '`tarTransform` option must be a transform stream ' +
                           'that modifies the tar archive before writing';
-var MAP_STREAM_ERROR = 'The function passed to `mapStream` option must return a stream';
+const MAP_STREAM_ERROR = 'The function passed to `mapStream` option must return a stream';
 
-var unsupportedOptions = [
+const unsupportedOptions = [
   'entries',
   'filter',
   'ignore',
@@ -40,118 +39,99 @@ var unsupportedOptions = [
 ];
 
 module.exports = function fileToTar(filePath, tarPath, options) {
-  return new Observable(function(observer) {
+  return new Observable(observer => {
     if (typeof filePath !== 'string') {
-      throw new TypeError(FILE_PATH_ERROR + ', but got ' + appendType(filePath) + '.');
+      throw new TypeError(`${FILE_PATH_ERROR}, but got ${appendType(filePath)}.`);
     }
 
     if (filePath.length === 0) {
-      throw new Error(FILE_PATH_ERROR + ', but got \'\' (empty string).');
+      throw new Error(`${FILE_PATH_ERROR}, but got '' (empty string).`);
     }
 
     if (typeof tarPath !== 'string') {
-      throw new TypeError(TAR_PATH_ERROR + ', but got ' + appendType(tarPath) + '.');
+      throw new TypeError(`${TAR_PATH_ERROR}, but got ${appendType(tarPath)}.`);
     }
 
     if (tarPath.length === 0) {
-      throw new Error(TAR_PATH_ERROR + ', but got \'\' (empty string).');
+      throw new Error(`${TAR_PATH_ERROR}, but got '' (empty string).`);
     }
 
-    var absoluteFilePath = resolve(filePath);
-    var absoluteTarPath = resolve(tarPath);
-    var dirPath = dirname(absoluteFilePath);
+    const absoluteFilePath = resolve(filePath);
+    const absoluteTarPath = resolve(tarPath);
+    const dirPath = dirname(absoluteFilePath);
 
     if (absoluteFilePath === absoluteTarPath) {
-      throw new Error(
-        'Source file path must be different from the archive path. Both were specified to ' +
-        absoluteFilePath +
-        '.'
-      );
+      throw new Error(`Source file path must be different from the archive path. Both were specified to ${
+        absoluteFilePath
+      }.`);
     }
 
     if (options !== undefined) {
       if (!isPlainObj(options)) {
-        throw new TypeError('Expected a plain object, but got ' + appendType(options) + '.');
+        throw new TypeError(`Expected a plain object to set file-to-tar options, but got ${appendType(options)}.`);
       }
     } else {
       options = {};
     }
 
-    unsupportedOptions.forEach(function(optionName) {
-      var val = options[optionName];
+    for (const optionName of unsupportedOptions) {
+      const val = options[optionName];
 
       if (val !== undefined) {
-        throw new Error(
-          'file-to-tar doesn\'t support `' + optionName + '` option, but ' +
-          appendType(val) +
-          ' was provided.'
-        );
-      }
-    });
-
-    if (options.tarTransform !== undefined) {
-      if (!isStream(options.tarTransform)) {
-        throw new TypeError(
-          TAR_TRANSFORM_ERROR +
-          ', but got a non-stream value ' +
-          appendType(options.tarTransform) +
-          '.'
-        );
-      }
-
-      if (!isStream.transform(options.tarTransform)) {
-        throw new TypeError(TAR_TRANSFORM_ERROR + ', but got a ' +
-          find(['duplex', 'writable', 'readable'], function(type) {
-            return isStream[type](options.tarTransform);
-          }) +
-          ' stream instead.'
-        );
+        throw new Error(`file-to-tar doesn't support \`${optionName}\` option, but ${appendType(val)} was provided.`);
       }
     }
 
-    var cancel;
+    if (options.tarTransform !== undefined) {
+      if (!isStream(options.tarTransform)) {
+        throw new TypeError(`${TAR_TRANSFORM_ERROR}, but got a non-stream value ${appendType(options.tarTransform)}.`);
+      }
 
-    lstat(absoluteFilePath, function(lstatErr, stat) {
+      if (!isStream.transform(options.tarTransform)) {
+        throw new TypeError(`${TAR_TRANSFORM_ERROR}, but got a ${
+          ['duplex', 'writable', 'readable'].find(type => isStream[type](options.tarTransform))
+        } stream instead.`);
+      }
+    }
+
+    let cancel;
+
+    lstat(absoluteFilePath, (lstatErr, stat) => {
       if (lstatErr) {
         observer.error(lstatErr);
         return;
       }
 
       if (!stat.isFile()) {
-        observer.error(new Error(
-          'Expected ' +
-          absoluteFilePath +
-          ' to be a file path, but it was a ' +
-          (stat.isDirectory() ? 'directory' : 'symbolic link') +
-          '.'
-        ));
+        observer.error(new Error(`Expected ${absoluteFilePath} to be a file path, but it was a ${
+          stat.isDirectory() ? 'directory' : 'symbolic link'
+        }.`));
+
         return;
       }
 
-      var firstWriteFailed = false;
+      let firstWriteFailed = false;
 
-      var firstWriteStream = fs.createWriteStream(tarPath, options).on('error', function(err) {
+      const firstWriteStream = fs.createWriteStream(tarPath, options).on('error', err => {
         if (err.code === 'EISDIR') {
-          err.message = 'Tried to write an archive file to ' +
-                        absoluteTarPath +
-                        ', but a directory already exists there.';
-
+          err.message = `Tried to write an archive file to ${absoluteTarPath}, but a directory already exists there.`;
           observer.error(err);
+
           return;
         }
 
         firstWriteFailed = true;
       });
 
-      mkdirp(dirname(tarPath), objectAssign({fs: fs}, options), function(mkdirpErr) {
+      mkdirp(dirname(tarPath), objectAssign({fs}, options), mkdirpErr => {
         if (mkdirpErr) {
           observer.error(mkdirpErr);
           return;
         }
 
-        var packStream = pack(dirPath, objectAssign({fs: fs}, options, {
-          entries: [relative(dirPath, filePath)],
-          map: function(header) {
+        const packStream = pack(dirPath, objectAssign({fs}, options, {
+          entries: [basename(filePath)],
+          map(header) {
             if (options.map) {
               header = options.map(header);
             }
@@ -159,37 +139,27 @@ module.exports = function fileToTar(filePath, tarPath, options) {
             return header;
           },
           mapStream(fileStream, header) {
-            var newStream = options.mapStream ? options.mapStream(fileStream, header) : fileStream;
+            const newStream = options.mapStream ? options.mapStream(fileStream, header) : fileStream;
 
             if (!isStream.readable(newStream)) {
-              packStream.emit(
-                'error',
-                new TypeError(MAP_STREAM_ERROR + (
-                  isStream(newStream) ?
-                    ' that is readable, but returned a non-readable stream.' :
-                    ', but returned a non-stream value ' + appendType(newStream) + '.'
-                ))
-              );
+              packStream.emit('error', new TypeError(`${MAP_STREAM_ERROR}${
+                isStream(newStream) ?
+                  ' that is readable, but returned a non-readable stream' :
+                  `, but returned a non-stream value ${appendType(newStream)}`
+              }.`));
 
               return new PassThrough();
             }
 
-            var bytes = 0;
+            let bytes = 0;
 
-            observer.next({
-              bytes: bytes,
-              header: header
-            });
+            observer.next({bytes, header});
 
             return newStream.pipe(new Transform({
               transform(chunk, encoding, cb) {
                 bytes += chunk.length;
 
-                observer.next({
-                  bytes: bytes,
-                  header: header
-                });
-
+                observer.next({bytes, header});
                 cb(null, chunk);
               }
             }));
@@ -207,7 +177,7 @@ module.exports = function fileToTar(filePath, tarPath, options) {
         ] : [
           packStream,
           getDest()
-        ], function(err) {
+        ], err => {
           if (err) {
             observer.error(err);
             return;

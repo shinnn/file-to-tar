@@ -5,7 +5,7 @@
   "repository": "shinnn/file-to-tar",
   "author": "Shinnosuke Watanabe (https://github.com/shinnn)",
   "scripts": {
-    "pretest": "eslint --format=codeframe index.js test.js",
+    "pretest": "eslint --fix --format=codeframe index.js test.js",
     "test": "nyc --reporter=html --reporter=text node test.js"
   },
   "license": "MIT",
@@ -28,10 +28,8 @@
     "graceful-fs": "^4.1.11",
     "is-plain-obj": "^1.1.0",
     "is-stream": "^1.1.0",
-    "lodash": "^4.17.4",
     "mkdirp": "^0.5.1",
     "object-assign": "^4.1.1",
-    "readable-stream": "^2.2.11",
     "tar-fs": "^1.15.3",
     "zen-observable": "^0.5.1"
   },
@@ -47,11 +45,6 @@
     "tar": "^3.1.5"
   },
   "eslintConfig": {
-    "extends": "@shinnn/node",
-    "rules": {
-      "no-var": "off",
-      "object-shorthand": "off",
-      "prefer-arrow-callback": "off"
-    }
+    "extends": "@shinnn/node"
   }
 }
