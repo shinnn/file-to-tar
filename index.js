@@ -16,7 +16,6 @@ const fs = require('graceful-fs');
 const isPlainObj = require('is-plain-obj');
 const isStream = require('is-stream');
 const mkdirp = require('mkdirp');
-const objectAssign = require('object-assign');
 const Observable = require('zen-observable');
 const pack = require('tar-fs').pack;
 const cancelablePump = require('cancelable-pump');
@@ -123,13 +122,13 @@ module.exports = function fileToTar(filePath, tarPath, options) {
         firstWriteFailed = true;
       });
 
-      mkdirp(dirname(tarPath), objectAssign({fs}, options), mkdirpErr => {
+      mkdirp(dirname(tarPath), Object.assign({fs}, options), mkdirpErr => {
         if (mkdirpErr) {
           observer.error(mkdirpErr);
           return;
         }
 
-        const packStream = pack(dirPath, objectAssign({fs}, options, {
+        const packStream = pack(dirPath, Object.assign({fs}, options, {
           entries: [basename(filePath)],
           map(header) {
             if (options.map) {

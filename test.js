@@ -86,7 +86,7 @@ test('fileToTar()', async t => {
     }
   });
 
-  const fail = t.fail.bind('Unexpectedly completed.');
+  const fail = t.fail.bind(t, 'Unexpectedly completed.');
 
   fileToTar('123/456/789', '123/456/789').subscribe({
     error(err) {
@@ -128,7 +128,7 @@ test('fileToTar()', async t => {
       t.strictEqual(
         err.toString(),
         `Error: Expected ${__dirname} to be a file path, but it was a directory.`,
-        'should fail when it cannot create a parent directory.'
+        'should fail when the source is a directory.'
       );
     },
     complete: fail
