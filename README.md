@@ -5,7 +5,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/lvk0mredvv0ovinw/branch/master?svg=true)](https://ci.appveyor.com/project/ShinnosukeWatanabe/file-to-tar/branch/master)
 [![Coverage Status](https://img.shields.io/coveralls/shinnn/file-to-tar.svg)](https://coveralls.io/github/shinnn/file-to-tar?branch=master)
 
-A [Node.js](https://nodejs.org/) module to create a [tar](https://www.gnu.org/software/tar/manual/html_node/Standard.html) archive from a single file
+Create a [tar](https://www.gnu.org/software/tar/manual/html_node/Standard.html) archive from a single file with the [Observable](https://tc39.github.io/proposal-observable/) API
 
 ```javascript
 const {existsSync} = require('fs');
@@ -87,7 +87,7 @@ Additionally, you can use the following:
 
 Type: [`Stream`](https://nodejs.org/api/stream.html#stream_stream)
 
-A [transform stream](https://nodejs.org/api/stream.html#stream_class_stream_transform) to modify the archive before extraction.
+A [transform stream](https://nodejs.org/api/stream.html#stream_class_stream_transform) to modify the archive after compression.
 
 For example, pass [`zlib.createGzip()`](https://nodejs.org/api/zlib.html#zlib_zlib_creategzip_options) and you can create a [gzipped](https://tools.ietf.org/html/rfc1952) tar.
 
@@ -101,6 +101,10 @@ const observable = fileToTar('Untitled.txt', 'Untitled.tar.gz', {
   tarTransform: gzipStream
 });
 ```
+
+## Related project
+
+* [tar-to-file](https://github.com/shinnn/tar-to-file) – Inverse of this module. Decompress a single-file tar archive
 
 ## License
 
