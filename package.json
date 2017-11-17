@@ -29,19 +29,19 @@
     "is-plain-obj": "^1.1.0",
     "is-stream": "^1.1.0",
     "mkdirp": "^0.5.1",
-    "tar-fs": "^1.15.3",
-    "zen-observable": "^0.5.1"
+    "tar-fs": "^1.16.0",
+    "zen-observable": "^0.6.0"
   },
   "devDependencies": {
-    "@shinnn/eslint-config-node": "^4.0.0",
+    "@shinnn/eslint-config-node": "^4.0.2",
     "create-symlink": "^1.0.0",
     "enumerate-files": "^1.0.0",
-    "eslint": "^4.0.0",
-    "make-dir": "^1.0.0",
-    "nyc": "^11.0.2",
+    "eslint": "^4.11.0",
+    "make-dir": "^1.1.0",
+    "nyc": "^11.3.0",
     "rmfr": "^1.0.3",
-    "tape": "^4.6.3",
-    "tar": "^3.1.5"
+    "tape": "^4.8.0",
+    "tar": "^4.0.2"
   },
   "eslintConfig": {
     "extends": "@shinnn/node"
