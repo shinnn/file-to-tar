@@ -1,7 +1,3 @@
-/*!
- * file-to-tar | MIT (c) Shinnosuke Watanabe
- * https://github.com/shinnn/file-to-tar
-*/
 'use strict';
 
 const path = require('path');
