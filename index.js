@@ -7,8 +7,8 @@ const basename = path.basename;
 const dirname = path.dirname;
 const resolve = path.resolve;
 
-const appendType = require('append-type');
 const fs = require('graceful-fs');
+const inspectWithKind = require('inspect-with-kind');
 const isPlainObj = require('is-plain-obj');
 const isStream = require('is-stream');
 const mkdirp = require('mkdirp');
@@ -36,7 +36,7 @@ const unsupportedOptions = [
 module.exports = function fileToTar(filePath, tarPath, options) {
   return new Observable(observer => {
     if (typeof filePath !== 'string') {
-      throw new TypeError(`${FILE_PATH_ERROR}, but got ${appendType(filePath)}.`);
+      throw new TypeError(`${FILE_PATH_ERROR}, but got a non-string value ${inspectWithKind(filePath)}.`);
     }
 
     if (filePath.length === 0) {
@@ -44,7 +44,7 @@ module.exports = function fileToTar(filePath, tarPath, options) {
     }
 
     if (typeof tarPath !== 'string') {
-      throw new TypeError(`${TAR_PATH_ERROR}, but got ${appendType(tarPath)}.`);
+      throw new TypeError(`${TAR_PATH_ERROR}, but got a non-string value ${inspectWithKind(tarPath)}.`);
     }
 
     if (tarPath.length === 0) {
@@ -63,7 +63,9 @@ module.exports = function fileToTar(filePath, tarPath, options) {
 
     if (options !== undefined) {
       if (!isPlainObj(options)) {
-        throw new TypeError(`Expected a plain object to set file-to-tar options, but got ${appendType(options)}.`);
+        throw new TypeError(`Expected a plain object to set file-to-tar options, but got ${
+          inspectWithKind(options)
+        }.`);
       }
     } else {
       options = {};
@@ -73,13 +75,17 @@ module.exports = function fileToTar(filePath, tarPath, options) {
       const val = options[optionName];
 
       if (val !== undefined) {
-        throw new Error(`file-to-tar doesn't support \`${optionName}\` option, but ${appendType(val)} was provided.`);
+        throw new Error(`file-to-tar doesn't support \`${optionName}\` option, but ${
+          inspectWithKind(val)
+        } was provided.`);
       }
     }
 
     if (options.tarTransform !== undefined) {
       if (!isStream(options.tarTransform)) {
-        throw new TypeError(`${TAR_TRANSFORM_ERROR}, but got a non-stream value ${appendType(options.tarTransform)}.`);
+        throw new TypeError(`${TAR_TRANSFORM_ERROR}, but got a non-stream value ${
+          inspectWithKind(options.tarTransform)
+        }.`);
       }
 
       if (!isStream.transform(options.tarTransform)) {
@@ -140,7 +146,7 @@ module.exports = function fileToTar(filePath, tarPath, options) {
               packStream.emit('error', new TypeError(`${MAP_STREAM_ERROR}${
                 isStream(newStream) ?
                   ' that is readable, but returned a non-readable stream' :
-                  `, but returned a non-stream value ${appendType(newStream)}`
+                  `, but returned a non-stream value ${inspectWithKind(newStream)}`
               }.`));
 
               return new PassThrough();

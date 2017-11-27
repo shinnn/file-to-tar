@@ -27,7 +27,7 @@ test('fileToTar()', async t => {
   fileToTar(join(__dirname, 'index.js'), dest).subscribe({
     next(progress) {
       if (progress.bytes === 0) {
-        t.strictEqual(
+        t.equal(
           progress.header.name,
           'index.js',
           'should send compression progress.'
@@ -90,7 +90,7 @@ test('fileToTar()', async t => {
 
   fileToTar('123/456/789', '123/456/789').subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
         `Error: Source file path must be different from the archive path. Both were specified to ${
           join(__dirname, '123', '456', '789')
@@ -103,7 +103,7 @@ test('fileToTar()', async t => {
 
   fileToTar('none', 'dest').subscribe({
     error({code}) {
-      t.strictEqual(
+      t.equal(
         code,
         'ENOENT',
         'should fail when the source file doesn\'t exists.'
@@ -114,7 +114,7 @@ test('fileToTar()', async t => {
 
   fileToTar(tmpSymlink, 'dest').subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
         `Error: Expected ${tmpSymlink} to be a file path, but it was a symbolic link.`,
         'should fail when the source file doesn\'t exists.'
@@ -125,7 +125,7 @@ test('fileToTar()', async t => {
 
   fileToTar(__dirname, join(tmp, '._')).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
         `Error: Expected ${__dirname} to be a file path, but it was a directory.`,
         'should fail when the source is a directory.'
@@ -136,23 +136,23 @@ test('fileToTar()', async t => {
 
   fileToTar(join(__dirname, 'index.js'), join(__dirname, 'node_modules')).subscribe({
     error({code}) {
-      t.strictEqual(code, 'EISDIR', 'should fail when it cannot write a tar file.');
+      t.equal(code, 'EISDIR', 'should fail when it cannot write a tar file.');
     },
     complete: fail
   });
 
   fileToTar(join(__dirname, 'index.js'), join(__filename, 'a')).subscribe({
     error({code}) {
-      t.strictEqual(code, 'EEXIST', 'should fail when it cannot create a parent directory.');
+      t.equal(code, 'EEXIST', 'should fail when it cannot create a parent directory.');
     },
     complete: fail
   });
 
   fileToTar(1).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
-        'TypeError: Expected a file path to be compressed as an archive, but got 1 (number).',
+        'TypeError: Expected a file path to be compressed as an archive, but got a non-string value 1 (number).',
         'should fail when the file path is not a string.'
       );
     },
@@ -161,7 +161,7 @@ test('fileToTar()', async t => {
 
   fileToTar('').subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
         'Error: Expected a file path to be compressed as an archive, but got \'\' (empty string).',
         'should fail when the file path is an empty string.'
@@ -172,9 +172,9 @@ test('fileToTar()', async t => {
 
   fileToTar('a', true).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
-        'TypeError: Expected a file path where an archive file will be created, but got true (boolean).',
+        'TypeError: Expected a file path where an archive file will be created, but got a non-string value true (boolean).',
         'should fail when the tar path is not a string.'
       );
     },
@@ -183,7 +183,7 @@ test('fileToTar()', async t => {
 
   fileToTar('a', '').subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
         'Error: Expected a file path where an archive file will be created, but got \'\' (empty string).',
         'should fail when the tar path is an empty string.'
@@ -194,9 +194,9 @@ test('fileToTar()', async t => {
 
   fileToTar('a', 'b', /c/).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
-        'TypeError: Expected a plain object to set file-to-tar options, but got /c/ (object).',
+        'TypeError: Expected a plain object to set file-to-tar options, but got /c/ (regexp).',
         'should fail when the third argument is not a plain object.'
       );
     },
@@ -205,7 +205,7 @@ test('fileToTar()', async t => {
 
   fileToTar('a', 'b', {entries: 1}).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
         'Error: file-to-tar doesn\'t support `entries` option, but 1 (number) was provided.',
         'should fail when it takes an invalid option.'
@@ -216,10 +216,9 @@ test('fileToTar()', async t => {
 
   fileToTar('a', 'b', {tarTransform: Symbol('c')}).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
-        'TypeError: `tarTransform` option must be a transform stream ' +
-        'that modifies the tar archive before writing, but got a non-stream value Symbol(c) (symbol).',
+        'TypeError: `tarTransform` option must be a transform stream that modifies the tar archive before writing, but got a non-stream value Symbol(c).',
         'should fail when it takes a non-stream `tarTransform` option.'
       );
     },
@@ -228,7 +227,7 @@ test('fileToTar()', async t => {
 
   fileToTar('a', 'b', {tarTransform: process.stdout}).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
         'TypeError: `tarTransform` option must be a transform stream that modifies ' +
         'the tar archive before writing, but got a writable stream instead.',
@@ -244,10 +243,9 @@ test('fileToTar()', async t => {
     }
   }).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
-        'TypeError: The function passed to `mapStream` option must return a stream, ' +
-        'but returned a non-stream value a (object).',
+        'TypeError: The function passed to `mapStream` option must return a stream, but returned a non-stream value <Buffer 61>.',
         'should fail when `mapStream` function returns a non-stream value.'
       );
     },
@@ -260,7 +258,7 @@ test('fileToTar()', async t => {
     }
   }).subscribe({
     error(err) {
-      t.strictEqual(
+      t.equal(
         err.toString(),
         'TypeError: The function passed to `mapStream` option ' +
         'must return a stream that is readable, but returned a non-readable stream.',
