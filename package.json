@@ -1,6 +1,6 @@
 {
 	"name": "file-to-tar",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"description": "Create a tar archive from a single file",
 	"repository": "shinnn/file-to-tar",
 	"author": "Shinnosuke Watanabe (https://github.com/shinnn)",
