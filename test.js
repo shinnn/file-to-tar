@@ -16,7 +16,7 @@ const promisifiedMkdirp = promisify(mkdirp);
 const promisifiedSymlink = promisify(symlink);
 
 test('fileToTar()', async t => {
-	t.plan(21);
+	t.plan(23);
 
 	const tmp = join(__dirname, 'tmp');
 	const tmpSymlink = join(__dirname, 'tmp-symlink');
@@ -264,6 +264,28 @@ test('fileToTar()', async t => {
 				'TypeError: The function passed to `mapStream` option ' +
         'must return a stream that is readable, but returned a non-readable stream.',
 				'should fail when it takes a unreadable `tarTransform` option.'
+			);
+		},
+		complete: fail
+	});
+
+	fileToTar().subscribe({
+		error(err) {
+			t.equal(
+				err.toString(),
+				'RangeError: Expected 1, 2 or 3 arguments (<string>, <string>[, <Object>]), but got no arguments.',
+				'should fail when it takes no arguments.'
+			);
+		},
+		complete: fail
+	});
+
+	fileToTar(1, 2, 3, 4).subscribe({
+		error(err) {
+			t.equal(
+				err.toString(),
+				'RangeError: Expected 1, 2 or 3 arguments (<string>, <string>[, <Object>]), but got 4 arguments.',
+				'should fail when it takes too many arguments.'
 			);
 		},
 		complete: fail

@@ -1,11 +1,8 @@
 'use strict';
 
-const path = require('path');
-const lstat = require('fs').lstat;
-
-const basename = path.basename;
-const dirname = path.dirname;
-const resolve = path.resolve;
+const {basename, dirname, resolve} = require('path');
+const {lstat} = require('fs');
+const {PassThrough, Transform} = require('stream');
 
 const fs = require('graceful-fs');
 const inspectWithKind = require('inspect-with-kind');
@@ -13,12 +10,8 @@ const isPlainObj = require('is-plain-obj');
 const isStream = require('is-stream');
 const mkdirp = require('mkdirp');
 const Observable = require('zen-observable');
-const pack = require('tar-fs').pack;
+const {pack} = require('tar-fs');
 const cancelablePump = require('cancelable-pump');
-const streamLib = require('stream');
-
-const PassThrough = streamLib.PassThrough;
-const Transform = streamLib.Transform;
 
 const FILE_PATH_ERROR = 'Expected a file path to be compressed as an archive';
 const TAR_PATH_ERROR = 'Expected a file path where an archive file will be created';
@@ -32,8 +25,18 @@ const unsupportedOptions = [
 	'strip'
 ];
 
-module.exports = function fileToTar(filePath, tarPath, options) {
+module.exports = function fileToTar(...args) {
 	return new Observable(observer => {
+		const argLen = args.length;
+
+		if (argLen === 0 || argLen > 3) {
+			throw new RangeError(`Expected 1, 2 or 3 arguments (<string>, <string>[, <Object>]), but got ${
+				argLen === 0 ? 'no' : argLen
+			} arguments.`);
+		}
+
+		const [filePath, tarPath] = args;
+
 		if (typeof filePath !== 'string') {
 			throw new TypeError(`${FILE_PATH_ERROR}, but got a non-string value ${inspectWithKind(filePath)}.`);
 		}
@@ -60,37 +63,37 @@ module.exports = function fileToTar(filePath, tarPath, options) {
 			}.`);
 		}
 
-		if (options !== undefined) {
+		const options = argLen === 3 ? args[2] : {};
+
+		if (argLen === 3) {
 			if (!isPlainObj(options)) {
 				throw new TypeError(`Expected a plain object to set file-to-tar options, but got ${
 					inspectWithKind(options)
 				}.`);
 			}
-		} else {
-			options = {};
-		}
 
-		for (const optionName of unsupportedOptions) {
-			const val = options[optionName];
+			for (const optionName of unsupportedOptions) {
+				const val = options[optionName];
 
-			if (val !== undefined) {
-				throw new Error(`file-to-tar doesn't support \`${optionName}\` option, but ${
-					inspectWithKind(val)
-				} was provided.`);
-			}
-		}
-
-		if (options.tarTransform !== undefined) {
-			if (!isStream(options.tarTransform)) {
-				throw new TypeError(`${TAR_TRANSFORM_ERROR}, but got a non-stream value ${
-					inspectWithKind(options.tarTransform)
-				}.`);
+				if (val !== undefined) {
+					throw new Error(`file-to-tar doesn't support \`${optionName}\` option, but ${
+						inspectWithKind(val)
+					} was provided.`);
+				}
 			}
 
-			if (!isStream.transform(options.tarTransform)) {
-				throw new TypeError(`${TAR_TRANSFORM_ERROR}, but got a ${
-					['duplex', 'writable', 'readable'].find(type => isStream[type](options.tarTransform))
-				} stream instead.`);
+			if (options.tarTransform !== undefined) {
+				if (!isStream(options.tarTransform)) {
+					throw new TypeError(`${TAR_TRANSFORM_ERROR}, but got a non-stream value ${
+						inspectWithKind(options.tarTransform)
+					}.`);
+				}
+
+				if (!isStream.transform(options.tarTransform)) {
+					throw new TypeError(`${TAR_TRANSFORM_ERROR}, but got a ${
+						['duplex', 'writable', 'readable'].find(type => isStream[type](options.tarTransform))
+					} stream instead.`);
+				}
 			}
 		}
 
