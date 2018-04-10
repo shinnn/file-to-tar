@@ -169,17 +169,10 @@ module.exports = function fileToTar(...args) {
 					}
 				}));
 
-				function getDest() {
-					return firstWriteFailed ? fs.createWriteStream(tarPath, options) : firstWriteStream;
-				}
-
-				cancel = cancelablePump(options.tarTransform ? [
+				cancel = cancelablePump([
 					packStream,
-					options.tarTransform,
-					getDest()
-				] : [
-					packStream,
-					getDest()
+					...options.tarTransform ? [options.tarTransform] : [],
+					firstWriteFailed ? fs.createWriteStream(tarPath, options) : firstWriteStream
 				], err => {
 					if (err) {
 						observer.error(err);
