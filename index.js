@@ -113,20 +113,25 @@ module.exports = function fileToTar(...args) {
 				return;
 			}
 
-			let firstWriteFailed = false;
+			let firstWriteError = null;
 
 			const firstWriteStream = fs.createWriteStream(tarPath, options).on('error', err => {
 				if (err.code === 'EISDIR') {
 					err.message = `Tried to write an archive file to ${absoluteTarPath}, but a directory already exists there.`;
+					firstWriteError = err;
 					observer.error(err);
 
 					return;
 				}
 
-				firstWriteFailed = true;
+				firstWriteError = err;
 			});
 
 			mkdirp(dirname(tarPath), Object.assign({fs}, options), mkdirpErr => {
+				if (firstWriteError && firstWriteError.code === 'EISDIR') {
+					return;
+				}
+
 				if (mkdirpErr) {
 					observer.error(mkdirpErr);
 					return;
@@ -172,7 +177,7 @@ module.exports = function fileToTar(...args) {
 				cancel = cancelablePump([
 					packStream,
 					...options.tarTransform ? [options.tarTransform] : [],
-					firstWriteFailed ? fs.createWriteStream(tarPath, options) : firstWriteStream
+					firstWriteError ? fs.createWriteStream(tarPath, options) : firstWriteStream
 				], err => {
 					if (err) {
 						observer.error(err);
