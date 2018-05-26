@@ -1,6 +1,6 @@
 {
 	"name": "file-to-tar",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Create a tar archive from a single file",
 	"repository": "shinnn/file-to-tar",
 	"author": "Shinnosuke Watanabe (https://github.com/shinnn)",
@@ -39,7 +39,7 @@
 		"nyc": "^11.8.0",
 		"rmfr": "^2.0.0",
 		"tape": "^4.9.0",
-		"tar": "^4.4.3"
+		"tar": "^4.4.4"
 	},
 	"eslintConfig": {
 		"extends": "@shinnn/node"
