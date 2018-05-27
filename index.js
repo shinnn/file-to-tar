@@ -35,7 +35,7 @@ module.exports = function fileToTar(...args) {
 			} arguments.`);
 		}
 
-		const [filePath, tarPath] = args;
+		const [filePath, tarPath, options = {}] = args;
 
 		if (typeof filePath !== 'string') {
 			throw new TypeError(`${FILE_PATH_ERROR}, but got a non-string value ${inspectWithKind(filePath)}.`);
@@ -62,8 +62,6 @@ module.exports = function fileToTar(...args) {
 				absoluteFilePath
 			}.`);
 		}
-
-		const options = argLen === 3 ? args[2] : {};
 
 		if (argLen === 3) {
 			if (!isPlainObj(options)) {
@@ -127,7 +125,7 @@ module.exports = function fileToTar(...args) {
 				firstWriteError = err;
 			});
 
-			mkdirp(dirname(tarPath), Object.assign({fs}, options), mkdirpErr => {
+			mkdirp(dirname(tarPath), {fs, ...options}, mkdirpErr => {
 				if (firstWriteError && firstWriteError.code === 'EISDIR') {
 					return;
 				}
@@ -137,7 +135,9 @@ module.exports = function fileToTar(...args) {
 					return;
 				}
 
-				const packStream = pack(dirPath, Object.assign({fs}, options, {
+				const packStream = pack(dirPath, {
+					fs,
+					...options,
 					entries: [basename(filePath)],
 					map(header) {
 						if (options.map) {
@@ -172,7 +172,7 @@ module.exports = function fileToTar(...args) {
 							}
 						}));
 					}
-				}));
+				});
 
 				cancel = cancelablePump([
 					packStream,
