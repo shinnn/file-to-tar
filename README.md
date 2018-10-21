@@ -2,7 +2,6 @@
 
 [![npm version](https://img.shields.io/npm/v/file-to-tar.svg)](https://www.npmjs.com/package/file-to-tar)
 [![Build Status](https://travis-ci.org/shinnn/file-to-tar.svg?branch=master)](https://travis-ci.org/shinnn/file-to-tar)
-[![Build status](https://ci.appveyor.com/api/projects/status/lvk0mredvv0ovinw/branch/master?svg=true)](https://ci.appveyor.com/project/ShinnosukeWatanabe/file-to-tar/branch/master)
 [![Coverage Status](https://img.shields.io/coveralls/shinnn/file-to-tar.svg)](https://coveralls.io/github/shinnn/file-to-tar?branch=master)
 
 Create a [tar](https://www.gnu.org/software/tar/manual/html_node/Standard.html) archive from a single file with the [Observable](https://tc39.github.io/proposal-observable/) API
