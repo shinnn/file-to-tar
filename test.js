@@ -2,18 +2,13 @@
 
 const {createGzip} = require('zlib');
 const {join} = require('path');
-const {promisify} = require('util');
+const {mkdir, symlink} = require('fs').promises;
 
 const enumerateFiles = require('enumerate-files');
 const {extract} = require('tar');
 const fileToTar = require('.');
-const mkdirp = require('mkdirp');
 const rmfr = require('rmfr');
-const {symlink} = require('graceful-fs');
 const test = require('tape');
-
-const promisifiedMkdirp = promisify(mkdirp);
-const promisifiedSymlink = promisify(symlink);
 
 test('fileToTar()', async t => {
 	t.plan(23);
@@ -23,7 +18,7 @@ test('fileToTar()', async t => {
 	const dest = join(tmp, 'archive.tar');
 
 	await Promise.all([rmfr(tmp), rmfr(tmpSymlink)]);
-	await promisifiedSymlink(__filename, tmpSymlink);
+	await symlink(__filename, tmpSymlink);
 
 	fileToTar(join(__dirname, 'index.js'), dest).subscribe({
 		next(progress) {
@@ -48,7 +43,7 @@ test('fileToTar()', async t => {
 		async complete() {
 			const cwd = join(tmp, '0');
 
-			await promisifiedMkdirp(cwd);
+			await mkdir(cwd, {recursive: true});
 			await extract({file: dest, cwd});
 
 			t.deepEqual(
@@ -76,7 +71,7 @@ test('fileToTar()', async t => {
 		async complete() {
 			const cwd = join(tmp, '1');
 
-			await promisifiedMkdirp(cwd);
+			await mkdir(cwd, {recursive: true});
 			await extract({file: anotherDest, cwd});
 
 			t.deepEqual(
@@ -193,11 +188,11 @@ test('fileToTar()', async t => {
 		complete: fail
 	});
 
-	fileToTar('a', 'b', /c/).subscribe({
+	fileToTar('a', 'b', /c/u).subscribe({
 		error(err) {
 			t.equal(
 				err.toString(),
-				'TypeError: Expected a plain object to set file-to-tar options, but got /c/ (regexp).',
+				'TypeError: Expected a plain object to set file-to-tar options, but got /c/u (regexp).',
 				'should fail when the third argument is not a plain object.'
 			);
 		},

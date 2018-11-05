@@ -11,9 +11,6 @@ const {existsSync} = require('fs');
 const fileToTar = require('file-to-tar');
 
 const subscription = fileToTar('readme.txt', 'archive.tar').subscribe({
-  start() {
-    console.log('Creating `archive.tar` from `readme.txt` ...');
-  },
   complete() {
     console.log('`archive.tar` created.');
     existsSync('archive.tar'); //=> true
@@ -26,7 +23,7 @@ subscription.unsubscribe();
 
 ## Installation
 
-[Use npm.](https://docs.npmjs.com/cli/install)
+[Use](https://docs.npmjs.com/cli/install) [npm](https://docs.npmjs.com/getting-started/what-is-npm).
 
 ```
 npm install file-to-tar
@@ -43,7 +40,7 @@ const fileToTar = require('file-to-tar');
 *filePath*: `string` (path of a file to compress)  
 *tarPath*: `string` (path of the created archive file)  
 *options*: `Object`  
-Return: [`Observable`](https://tc39.github.io/proposal-observable/#observable) ([zenparsing's implementation](https://github.com/zenparsing/zen-observable))
+Return: [`Observable`](https://tc39.github.io/proposal-observable/#observable) ([Kevin Smith's implementation](https://github.com/zenparsing/zen-observable))
 
 When the `Observable` is [subscribed](https://tc39.github.io/proposal-observable/#observable-prototype-subscribe), it starts to create a tar file from a given file and successively send compression progress to its `Observer`.
 
@@ -75,10 +72,9 @@ Completed
 
 #### Options
 
-You can pass options to [tar-fs](https://github.com/mafintosh/tar-fs)'s [`pack()`](https://github.com/mafintosh/tar-fs/blob/v1.15.3/index.js#L61) method and [`fs.createReadStream()`](https://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options). Note that:
+You can pass options to [tar-fs](https://github.com/mafintosh/tar-fs)'s [`pack()`](https://github.com/mafintosh/tar-fs/blob/v1.16.3/index.js#L61) method and [`fs.createReadStream()`](https://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options). Note that:
 
-* [`entries`](https://github.com/mafintosh/tar-fs/blob/v1.15.3/index.js#L69), [`strip`](https://github.com/mafintosh/tar-fs/blob/v1.15.3/index.js#L76), [`filter` and `ignore`](https://github.com/mafintosh/tar-fs/blob/v1.15.3/index.js#L66) options are not supported.
-* [`fs` option](https://github.com/mafintosh/tar-fs/blob/v1.15.3/index.js#L65) defaults to [graceful-fs](https://github.com/isaacs/node-graceful-fs) for more stability.
+* [`entries`](https://github.com/mafintosh/tar-fs/blob/v1.16.3/index.js#L69), [`strip`](https://github.com/mafintosh/tar-fs/blob/v1.16.3/index.js#L77), [`filter` and `ignore`](https://github.com/mafintosh/tar-fs/blob/v1.16.3/index.js#L66) options are not supported.
 
 Additionally, you can use the following:
 
@@ -86,7 +82,7 @@ Additionally, you can use the following:
 
 Type: [`Stream`](https://nodejs.org/api/stream.html#stream_stream)
 
-A [transform stream](https://nodejs.org/api/stream.html#stream_class_stream_transform) to modify the archive after compression.
+A [`TransformStream`](https://nodejs.org/api/stream.html#stream_class_stream_transform) to modify the archive after compression.
 
 For example, pass [`zlib.createGzip()`](https://nodejs.org/api/zlib.html#zlib_zlib_creategzip_options) and you can create a [gzipped](https://tools.ietf.org/html/rfc1952) tar.
 

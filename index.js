@@ -1,14 +1,13 @@
 'use strict';
 
 const {basename, dirname, resolve} = require('path');
-const {lstat} = require('fs');
+const {createWriteStream, lstat, mkdir} = require('fs');
 const {PassThrough, Transform} = require('stream');
+const {promisify} = require('util');
 
-const fs = require('graceful-fs');
 const inspectWithKind = require('inspect-with-kind');
 const isPlainObj = require('is-plain-obj');
 const isStream = require('is-stream');
-const mkdirp = require('mkdirp');
 const Observable = require('zen-observable');
 const {pack} = require('tar-fs');
 const cancelablePump = require('cancelable-pump');
@@ -17,13 +16,13 @@ const FILE_PATH_ERROR = 'Expected a file path to be compressed as an archive';
 const TAR_PATH_ERROR = 'Expected a file path where an archive file will be created';
 const TAR_TRANSFORM_ERROR = '`tarTransform` option must be a transform stream that modifies the tar archive before writing';
 const MAP_STREAM_ERROR = 'The function passed to `mapStream` option must return a stream';
-
 const unsupportedOptions = [
 	'entries',
 	'filter',
 	'ignore',
 	'strip'
 ];
+const promisifiedMkdir = promisify(mkdir);
 
 module.exports = function fileToTar(...args) {
 	return new Observable(observer => {
@@ -113,7 +112,7 @@ module.exports = function fileToTar(...args) {
 
 			let firstWriteError = null;
 
-			const firstWriteStream = fs.createWriteStream(tarPath, options).on('error', err => {
+			const firstWriteStream = createWriteStream(tarPath, options).on('error', err => {
 				if (err.code === 'EISDIR') {
 					err.message = `Tried to write an archive file to ${absoluteTarPath}, but a directory already exists there.`;
 					firstWriteError = err;
@@ -125,18 +124,17 @@ module.exports = function fileToTar(...args) {
 				firstWriteError = err;
 			});
 
-			mkdirp(dirname(tarPath), {fs, ...options}, mkdirpErr => {
+			promisifiedMkdir(dirname(tarPath), {recursive: true}, mkdirErr => {
 				if (firstWriteError && firstWriteError.code === 'EISDIR') {
 					return;
 				}
 
-				if (mkdirpErr) {
-					observer.error(mkdirpErr);
+				if (mkdirErr) {
+					observer.error(mkdirErr);
 					return;
 				}
 
 				const packStream = pack(dirPath, {
-					fs,
 					...options,
 					entries: [basename(filePath)],
 					map(header) {
@@ -177,7 +175,7 @@ module.exports = function fileToTar(...args) {
 				cancel = cancelablePump([
 					packStream,
 					...options.tarTransform ? [options.tarTransform] : [],
-					firstWriteError ? fs.createWriteStream(tarPath, options) : firstWriteStream
+					firstWriteError ? createWriteStream(tarPath, options) : firstWriteStream
 				], err => {
 					if (err) {
 						observer.error(err);
